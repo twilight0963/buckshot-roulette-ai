@@ -6,6 +6,6 @@ for i in range(10000):
     Vars.episode = i
     if i%100 == 0:
         if Vars.episode!= 0:
-            print(Vars.reward/Vars.episode)
+            print("Reward on average", Vars.reward/Vars.episode)
         print(i)
     TestGame.runGame()

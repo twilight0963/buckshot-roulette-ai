@@ -4,7 +4,7 @@ import pickle
 
 def loadQTable():
     try:
-        with open(f"QTable.bin", "rb") as f:
+        with open(f"SaveStates/QTable.bin", "rb") as f:
             Vars.Q = pickle.load(f)
     except FileNotFoundError:
         print("Starting training")
@@ -121,9 +121,9 @@ def updateQTable(state, action, reward, next_state):
         Vars.Q[state] = {}
     Vars.Q[state][action] = new_value
     if Vars.episode%10==0 and Vars.episode != 0:
-        with open(f"QTable_{Vars.episode}.bin","wb") as fin:
+        with open(f"SaveStates/QTable_{Vars.episode}.bin","wb") as fin:
             pickle.dump(Vars.Q, fin)
-        with open(f"QTable.bin","wb") as fin:
+        with open(f"SaveStates/QTable.bin","wb") as fin:
             pickle.dump(Vars.Q, fin)
 
 
