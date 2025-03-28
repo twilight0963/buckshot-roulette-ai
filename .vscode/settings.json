@@ -1,6 +1,7 @@
 {
     "python.analysis.extraPaths": [
         "./TestGame/Game",
-        "./TestGame/QLearningAlgo"
+        "./TestGame/QLearningAlgo",
+        "./SaveStates"
     ]
 }

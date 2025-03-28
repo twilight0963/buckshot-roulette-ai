@@ -35,14 +35,6 @@ def runGame():
         while Vars.bullet_index < len(Vars.shells) and (Vars.dealer_health>0) and (Vars.player_health>0):
             Vars.dmg = 1
             if Vars.turn == 0:
-                print(f"""
-                    --------------------------------
-                    bullet index: {Vars.bullet_index}
-                    dealer_health: {Vars.dealer_health}
-                    player_health: {Vars.player_health}
-                    player_items: {Vars.player_items}
-                    --------------------------------
-                    """)
                 AIAgent.aiTurn()
             else:
                 Dealer.dealerTurn()
