@@ -1,7 +1,7 @@
 import random, Actions, Vars
 def calcProbability(bullet_index, known_shells, total_live, total_blank):
     if bullet_index in known_shells.keys():
-        #ReVars.turn true value of shell as "probability of dealing damage" (1 for live, 0 for blank)
+        #Return true value of shell as "probability of dealing damage" (1 for live, 0 for blank)
         return known_shells[bullet_index]
     else:
         
@@ -11,7 +11,7 @@ def calcProbability(bullet_index, known_shells, total_live, total_blank):
         unknown_live = total_live - known_live
         unknown_blank = total_blank - known_blank
 
-        #ReVars.turn Probability of current bullet being an unknown live
+        #Return Probability of current bullet being an unknown live
         return (unknown_live)/(unknown_live + unknown_blank)
 
 

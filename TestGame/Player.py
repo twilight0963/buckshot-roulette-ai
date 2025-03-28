@@ -1,5 +1,6 @@
 import Vars
 import Actions
+from QLearningAlgo import PlayerKnownShells
 def playerTurn():
     isPH = Vars.isPH
     print(isPH)
@@ -23,10 +24,13 @@ def playerUseItems(item, isntAdrenaline = True):
     if item == 1:
         Vars.player_health = Actions.cigarette(Vars.player_health)
     elif item == 2:
-        print(Actions.magnifyingGlass(Vars.shells, Vars.bullet_index))
+        shell = Actions.magnifyingGlass(Vars.shells, Vars.bullet_index)
+        print(shell)
+        PlayerKnownShells.addKnown(Vars.bullet_index,shell)
     elif item == 3:
         x,y = Actions.burnerPhone(Vars.shells, Vars.bullet_index)
         print(f"{x}th shell is {y}")
+        PlayerKnownShells.addKnown(x,y)
     elif item == 4:
         Vars.isDH = Actions.handcuff(Vars.isDH)
     elif item == 5:
