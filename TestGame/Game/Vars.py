@@ -6,3 +6,5 @@ alpha = 1
 Q={}
 reward = 0
 done=False
+is_training = True
+player_known_shells = [00 for _ in range(8)]

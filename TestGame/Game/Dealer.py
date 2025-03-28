@@ -95,7 +95,10 @@ def dealerTurn():
         Vars.isDH = 0
         desperation = 1 - (Vars.dealer_health / Vars.max_health)
         shot_probability = calcProbability(Vars.bullet_index, Vars.known_shells, Vars.total_live, Vars.total_blank)
-        next_probability = calcProbability(Vars.bullet_index+1, Vars.known_shells, Vars.total_live, Vars.total_blank)
+        if Vars.bullet_index < len(Vars.shells)-1:
+            next_probability = calcProbability(Vars.bullet_index+1, Vars.known_shells, Vars.total_live, Vars.total_blank)
+        else:
+            next_probability = 0
         variation = random.randint(-2,2)
         aggression_score = shot_probability + desperation + (variation/10) * 0.3
 

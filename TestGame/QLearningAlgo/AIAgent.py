@@ -35,14 +35,7 @@ def getCurrentState():
     barrel_encoded = PlayerKnownShells.getShells()
     player_items_bitmask, cuffs = EncodeItems.encode_items_presence(Vars.player_items)
 
-    return (
-        Vars.player_hp,
-        Vars.dealer_hp,
-        Vars.current_turn,
-        barrel_encoded,
-        player_items_bitmask,
-        cuffs,
-    )
+    return tuple([Vars.player_health, Vars.dealer_health, Vars.turn, barrel_encoded, player_items_bitmask, cuffs])
 
 def getAvailableActions(steal_mode):
     if steal_mode:
@@ -115,6 +108,7 @@ def updateQTable(state, action, reward, next_state):
 
     alpha = Vars.alpha
     gamma = 0.95
+    print(state)
 
     old_value = Vars.Q[state][action] if state in Vars.Q and action in Vars.Q[state] else 0
     future_rewards = max(Vars.Q.get(next_state, {}).values(), default=0)
