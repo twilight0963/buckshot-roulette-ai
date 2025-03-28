@@ -1,4 +1,5 @@
-import Vars,Actions,PlayerKnownShells
+from Game import Vars,Actions
+from . import PlayerKnownShells
 
 def aiShootOther():
     print("AI shoots dealer.")

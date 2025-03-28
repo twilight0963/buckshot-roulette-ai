@@ -1,6 +1,6 @@
 import random
-import Dealer
-import Vars
+from . import Dealer
+from . import Vars
 from QLearningAlgo import AIAgent
 
 #1 - Cigarette

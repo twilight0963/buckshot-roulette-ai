@@ -1,4 +1,5 @@
-import random, Actions, Vars
+import random
+from . import Actions, Vars
 def calcProbability(bullet_index, known_shells, total_live, total_blank):
     if bullet_index in known_shells.keys():
         #Return true value of shell as "probability of dealing damage" (1 for live, 0 for blank)

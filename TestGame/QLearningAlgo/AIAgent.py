@@ -1,4 +1,6 @@
-import Vars, PlayerKnownShells,EncodeItems,AIActions, pickle
+from Game import Vars
+from . import PlayerKnownShells ,EncodeItems, AIActions
+import pickle
 
 def loadQTable():
     try:

@@ -1,5 +1,5 @@
 import random
-import Vars
+from . import Vars
 def cigarette(health):
     #Heal by 1
     print("Cigarette used")

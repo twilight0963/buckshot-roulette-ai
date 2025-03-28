@@ -1,5 +1,5 @@
-import Vars
-import Actions
+from . import Vars
+from . import Actions
 from QLearningAlgo import PlayerKnownShells
 def playerTurn():
     isPH = Vars.isPH
