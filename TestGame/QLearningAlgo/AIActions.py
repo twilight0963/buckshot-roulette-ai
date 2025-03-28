@@ -27,3 +27,4 @@ def aiUseItems(item, isntAdrenaline = True):
         Actions.saw()
     elif item == 8:
         Vars.player_health = Actions.expiredMeds(Vars.player_health)
+    Vars.player_items.remove(item)

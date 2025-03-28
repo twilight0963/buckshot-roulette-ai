@@ -56,6 +56,8 @@ def getAvailableActions(steal_mode):
 
     # Add item usage actions based on player inventory
     unique_items = set(Vars.player_items)
+    if Vars.isDH != 0:
+        unique_items.discard(4)
     for item_id in unique_items:
         actions.append(30 + item_id) #3x is use item
 
