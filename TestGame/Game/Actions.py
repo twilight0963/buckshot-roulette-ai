@@ -56,6 +56,7 @@ def shootOther(turn, dealer_health, player_health, shells, bullet_index):
     #Turn 0 = Player
     #Turn 1 = Dealer
     Vars.known_shells[bullet_index] = shells[bullet_index]
+    Vars.player_known_shells[bullet_index] = Vars.shells[Vars.bullet_index]
     if turn == 0:
         print(f"You shot {shells[bullet_index]}")
         if shells[bullet_index] == 1:
@@ -78,6 +79,11 @@ def shootSelf(turn, dealer_health, player_health, shells, bullet_index):
     #Turn 0 = Player
     #Turn 1 = Dealer
     Vars.known_shells[bullet_index] = shells[bullet_index]
+    Vars.player_known_shells[Vars.bullet_index] = Vars.shells[Vars.bullet_index]
+    with open("Bad_Moves.txt", "a") as f:
+        f.write("\nBad Move")
+        f.write(" || Shell Index =  " + str(Vars.bullet_index))
+        f.write(" || Value =  " + str(Vars.player_known_shells))
     if turn == 1:
         print(f"Dealer shot {shells[bullet_index]} (self)")
         if shells[bullet_index] == 1:

@@ -2,6 +2,7 @@ import random
 from . import Dealer
 from . import Vars
 from QLearningAlgo import AIAgent
+from QLearningAlgo import PlayerKnownShells
 
 #1 - Cigarette
 #2 - Magnifying Glass
@@ -13,7 +14,6 @@ from QLearningAlgo import AIAgent
 #8 - Expired Meds
 #9 - Adrenaline
 def runGame():
-    Vars.done = False
     Vars.max_health = random.randint(2,5)
     Vars.player_items = []
     Vars.dealer_items = []
@@ -22,6 +22,8 @@ def runGame():
         Vars.player_items.extend([random.randint(1,7) for _ in range(min(4,8-len(Vars.player_items)))])
         Vars.dealer_items.extend([random.randint(1,7) for _ in range(4)])
         Vars.shells = [random.randint(0, 1) for _ in range(random.randint(2,8))]
+        PlayerKnownShells.defineBarrel(len(Vars.shells))
+        Vars.known_shells = {}
         while Vars.shells.count(1) == 0:
             Vars.shells = [random.randint(0, 1) for _ in range(random.randint(2,8))]
         Vars.total_live = Vars.shells.count(1)
@@ -38,8 +40,6 @@ def runGame():
                 AIAgent.aiTurn()
             else:
                 Dealer.dealerTurn()
-    Vars.done = True
-    Vars.alpha = max(0.1, 1 * (0.99 ** Vars.episode))
     Vars.episode+=1
     if Vars.player_health == 0:
         print("Lost!")

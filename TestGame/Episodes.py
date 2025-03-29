@@ -9,5 +9,6 @@ for i in range(100000):
             print("\n\n----++++Reward on average++++----\n\n", Vars.reward/Vars.episode)
             with open("log.txt", "a") as f:
                 f.write("\nReward on average: "+ str(Vars.reward/Vars.episode))
+                f.write(" || Win Rate = " + str(Vars.wins*100/Vars.episode)+"%")
         print(i)
     TestGame.runGame()

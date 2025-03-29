@@ -90,7 +90,6 @@ def useItem(desperation, next_probability, items, isntAdrenaline = True):
 
 def dealerTurn():
     global shot_probability, aggression_score
-    print(Vars.isDH)
     if Vars.isDH-1 < 1:
         Vars.isDH = 0
         desperation = 1 - (Vars.dealer_health / Vars.max_health)
