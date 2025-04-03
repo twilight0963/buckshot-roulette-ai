@@ -1,8 +1,10 @@
 import random
 from . import Dealer
+from . import Dealer_Bad
 from . import Vars
-from QLearningAlgo import AIAgent
-from QLearningAlgo import PlayerKnownShells
+from DQNAlgorithm import AIPawn
+from SelfPlayOpponent import SmartCookie
+from DQNAlgorithm import PlayerKnownShells
 
 #1 - Cigarette
 #2 - Magnifying Glass
@@ -37,9 +39,14 @@ def runGame():
         while Vars.bullet_index < len(Vars.shells) and (Vars.dealer_health>0) and (Vars.player_health>0):
             Vars.dmg = 1
             if Vars.turn == 0:
-                AIAgent.aiTurn()
+                AIPawn.DQNTurn()
             else:
-                Dealer.dealerTurn()
+                if Vars.episode < 10_000:
+                    Dealer_Bad.dealerTurn()
+                elif Vars.episode < 100_000:
+                    Dealer.dealerTurn()
+                else:
+                    SmartCookie.DQNTurn()
     Vars.episode+=1
     if Vars.player_health == 0:
         print("Lost!")

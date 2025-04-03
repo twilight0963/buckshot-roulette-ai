@@ -32,7 +32,7 @@ def aiTurn(steal_mode = False):
 
 
 def getCurrentState():
-    global revealed_items
+
     barrel_encoded = PlayerKnownShells.getShells()
     player_items_bitmask, cuffs = EncodeItems.encode_items_presence(Vars.player_items)
 

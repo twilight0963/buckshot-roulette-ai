@@ -1,14 +1,19 @@
 from Game import TestGame, Vars
-from QLearningAlgo import AIAgent
+import pickle
+import time
 
-AIAgent.loadQTable()
-for i in range(100000):
-    Vars.episode = i
-    if i%100 == 0:
-        if Vars.episode!= 0:
-            print("\n\n----++++Reward on average++++----\n\n", Vars.reward/Vars.episode)
-            with open("log.txt", "a") as f:
-                f.write("\nReward on average: "+ str(Vars.reward/Vars.episode))
-                f.write(" || Win Rate = " + str(Vars.wins*100/Vars.episode)+"%")
-        print(i)
+Vars.reward = 0
+Vars.wins = 0
+old_win_rate = 0
+for i in range(200000):
     TestGame.runGame()
+    Vars.episode = i
+    if i%100 == 0 and i!= 0:
+        with open("log.txt", "a") as f:
+            f.write("\nReward on average: "+ str(Vars.reward/i))
+            f.write(" || Win Rate = " + str(Vars.wins)+"%")
+                        
+        Vars.wins = 0
+
+        
+    

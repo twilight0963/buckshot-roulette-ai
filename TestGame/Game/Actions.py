@@ -24,6 +24,8 @@ def handcuff(isHandcuffed):
     print("Handcuff used")
     if not isHandcuffed:
         return 2
+    else:
+        return isHandcuffed
 
 def saw():
     #Double damage
@@ -56,7 +58,7 @@ def shootOther(turn, dealer_health, player_health, shells, bullet_index):
     #Turn 0 = Player
     #Turn 1 = Dealer
     Vars.known_shells[bullet_index] = shells[bullet_index]
-    Vars.player_known_shells[bullet_index] = Vars.shells[Vars.bullet_index]
+    Vars.player_known_shells[bullet_index] = shells[bullet_index]
     if turn == 0:
         print(f"You shot {shells[bullet_index]}")
         if shells[bullet_index] == 1:

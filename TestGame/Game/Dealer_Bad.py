@@ -89,28 +89,5 @@ def useItem(desperation, next_probability, items, isntAdrenaline = True):
 
 
 def dealerTurn():
-    global shot_probability, aggression_score
-    if Vars.isDH-1 < 1:
-        Vars.isDH = 0
-        desperation = 1 - (Vars.dealer_health / Vars.max_health)
-        shot_probability = calcProbability(Vars.bullet_index, Vars.known_shells, Vars.total_live, Vars.total_blank)
-        if Vars.bullet_index < len(Vars.shells)-1:
-            next_probability = calcProbability(Vars.bullet_index+1, Vars.known_shells, Vars.total_live, Vars.total_blank)
-        else:
-            next_probability = 0
-        variation = random.randint(-2,2)
-        aggression_score = shot_probability + desperation + (variation/10) * 0.3
-
-        
-        
-        if shouldUseItems(next_probability, Vars.dealer_items):
-            Vars.dealer_items = useItem(desperation, next_probability, Vars.dealer_items)
-            return
-
-        if aggression_score >= 0.5:
-            Vars.turn, Vars.dealer_health, Vars.player_health, Vars.bullet_index = Actions.shootOther(Vars.turn, Vars.dealer_health, Vars.player_health, Vars.shells, Vars.bullet_index)
-        else:
-            Vars.turn, Vars.dealer_health, Vars.player_health, Vars.bullet_index = Actions.shootSelf(Vars.turn, Vars.dealer_health, Vars.player_health, Vars.shells, Vars.bullet_index)
-    else:
-        Vars.isDH -= 1
-        Vars.turn = 0
+    Vars.turn, Vars.dealer_health, Vars.player_health, Vars.bullet_index = Actions.shootOther(Vars.turn, Vars.dealer_health, Vars.player_health, Vars.shells, Vars.bullet_index)
+    
