@@ -22,16 +22,20 @@ class DQN(nn.Module):
             self.batch_size = 64
             self.gamma = 0.99
             self.steal_mode = False
+            self.target_network = DQN(input_size, output_size, buffer_capacity,True)
+            self.update_target_network()
 
             #Target Network
             
-            target_state_dict = {
+
+    def update_target_network(self):
+        target_state_dict = {
                 k: v for k, v in self.state_dict().items() 
                 if not k.startswith('target_network.')
             }
-            self.target_network = DQN(input_size, output_size, buffer_capacity,True)
-            self.target_network.load_state_dict(target_state_dict)
-            self.target_network.eval()
+        self.target_network.load_state_dict(target_state_dict)
+        self.target_network.eval()
+
 
     def forward(self, state):
         if state is None or (isinstance(state, torch.Tensor) and state.nelement() == 0):
@@ -170,5 +174,5 @@ class DQN(nn.Module):
         self.scheduler.step()
         #Target Network Update
         if Vars.episode % 1000 == 0 and Vars.episode != 0:
-            self.target_network.load_state_dict(self.state_dict())
+            self.update_target_network()
 

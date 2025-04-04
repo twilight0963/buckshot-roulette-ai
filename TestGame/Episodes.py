@@ -1,5 +1,5 @@
 from Game import TestGame, Vars
-
+from datetime import datetime
 
 #Constants
 EPISODE_START = 1
@@ -19,10 +19,14 @@ for i in range(EPISODE_START, EPISODE_END+1):
     Vars.episode = i
     #Every LOG_INTERVAL episodes, log the results
     if i%LOG_INTERVAL == 0 and i!= 0:
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        avg_reward = Vars.reward / LOG_INTERVAL
+        win_rate = Vars.wins * 100 / LOG_INTERVAL
         #Log the results
         with open("log.txt", "a") as f:
-            f.write("\nReward on average: "+ str(Vars.reward/LOG_INTERVAL))
-            f.write(" || Win Rate = " + str(Vars.wins*100/LOG_INTERVAL)+"%")
+            f.write("\nReward on average: "+ str(avg_reward))
+            f.write(" || Win Rate = " + str(win_rate)+"%")
+            f.write(" || Time: " + timestamp)
                         
         #Reset the variables
         Vars.wins = 0

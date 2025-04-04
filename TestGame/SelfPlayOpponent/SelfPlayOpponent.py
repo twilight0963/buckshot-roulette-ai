@@ -14,10 +14,9 @@ class DQN(nn.Module):
         self.fc1 = nn.Linear(input_size, 128)
         self.fc2 = nn.Linear(128, 128)
         self.fc3 = nn.Linear(128, output_size)
-        self.optimizer = optim.Adam(self.parameters(), lr=0.001)
-        self.scheduler = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.9999)
-        self.criterion = nn.MSELoss()
         self.replay_buffer = ReplayBuffer(buffer_capacity)
+
+        self.criterion = nn.MSELoss()
         self.batch_size = 64
         self.gamma = 0.99
         self.steal_mode = False
@@ -32,21 +31,21 @@ class DQN(nn.Module):
     
     def chooseAction(self, state):
         actions = self.getAvailableActions()
-        epsilon = 0.1 + (0.9 * numpy.exp(-0.00002 * Vars.episode))
+        epsilon = 0.01
         if numpy.random.random() < epsilon:
             #Explore
             avalaible_actions = [i for i, available in enumerate(actions) if available]
             return numpy.random.choice(avalaible_actions)
         
         else:
+            with torch.no_grad():
+                #Exploit
+                q_values = self.forward(state)  # Get Q-values
+                q_values = q_values.detach().numpy()  # Convert tensor to NumPy for masking
             
-            #Exploit
-            q_values = self.forward(state)  # Get Q-values
-            q_values = q_values.detach().numpy()  # Convert tensor to NumPy for masking
-        
-            q_values = [q if actions[i] else -float('inf') for i, q in enumerate(q_values)]
-        
-            return int(numpy.argmax(q_values))
+                q_values = [q if actions[i] else -float('inf') for i, q in enumerate(q_values)]
+            
+                return int(numpy.argmax(q_values))
     
 
     def getCurrentState(self):
