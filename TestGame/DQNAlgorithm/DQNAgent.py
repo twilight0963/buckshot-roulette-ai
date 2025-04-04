@@ -9,20 +9,34 @@ import torch.optim as optim
 from DQNAlgorithm.ReplayBuffer import ReplayBuffer
 
 class DQN(nn.Module):
-    def __init__(self, input_size, output_size, buffer_capacity):
+    def __init__(self, input_size, output_size, buffer_capacity, is_target = False):
         super(DQN, self).__init__()
         self.fc1 = nn.Linear(input_size, 128)
         self.fc2 = nn.Linear(128, 128)
         self.fc3 = nn.Linear(128, output_size)
-        self.optimizer = optim.Adam(self.parameters(), lr=0.001)
-        self.scheduler = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.9999)
-        self.criterion = nn.MSELoss()
-        self.replay_buffer = ReplayBuffer(buffer_capacity)
-        self.batch_size = 64
-        self.gamma = 0.99
-        self.steal_mode = False
+        if not is_target:
+            self.optimizer = optim.Adam(self.parameters(), lr=0.001)
+            self.scheduler = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.9999)
+            self.criterion = nn.MSELoss()
+            self.replay_buffer = ReplayBuffer(buffer_capacity)
+            self.batch_size = 64
+            self.gamma = 0.99
+            self.steal_mode = False
+
+            #Target Network
+            
+            target_state_dict = {
+                k: v for k, v in self.state_dict().items() 
+                if not k.startswith('target_network.')
+            }
+            self.target_network = DQN(input_size, output_size, buffer_capacity,True)
+            self.target_network.load_state_dict(target_state_dict)
+            self.target_network.eval()
 
     def forward(self, state):
+        if state is None or (isinstance(state, torch.Tensor) and state.nelement() == 0):
+            # Return zero tensor with appropriate shape for initial state
+            return torch.zeros(21)  # Assuming output_size is 21 for available actions
         #Input layer
         state = torch.relu(self.fc1(state))
         #Hidden Layer
@@ -32,7 +46,7 @@ class DQN(nn.Module):
     
     def chooseAction(self, state):
         actions = self.getAvailableActions()
-        epsilon = 0.1 + (0.9 * numpy.exp(-0.00002 * Vars.episode))
+        epsilon = max(0.1, 1.0 - Vars.episode / 50_000)
         if numpy.random.random() < epsilon:
             #Explore
             avalaible_actions = [i for i, available in enumerate(actions) if available]
@@ -121,7 +135,10 @@ class DQN(nn.Module):
         Vars.reward += reward
         return reward, next_state
     
-    def train(self):
+    def train(self, training=True):
+        if not training:
+            return
+        # Check if the replay buffer has enough samples
         if self.replay_buffer.size() < self.batch_size:
             return
         
@@ -136,9 +153,9 @@ class DQN(nn.Module):
         dones = torch.tensor(dones, dtype=torch.bool)
 
         with torch.no_grad():
-            next_q_values = self.forward(next_states)
+            next_q_values = self.target_network(next_states)  # Use target network
             max_next_q_values = torch.max(next_q_values, dim=1)[0]
-            targets = rewards + self.gamma * max_next_q_values.detach() * (~dones)
+            targets = rewards + self.gamma * max_next_q_values * (~dones)
 
         if Vars.episode % 100 == 0:
             self.replay_buffer.save()
@@ -148,6 +165,10 @@ class DQN(nn.Module):
         loss = self.criterion(q_values, targets)
         self.optimizer.zero_grad()
         loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.parameters(), max_norm=1.0)
         self.optimizer.step()
         self.scheduler.step()
+        #Target Network Update
+        if Vars.episode % 1000 == 0 and Vars.episode != 0:
+            self.target_network.load_state_dict(self.state_dict())
 
