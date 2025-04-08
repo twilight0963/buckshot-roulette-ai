@@ -17,3 +17,8 @@ reward = 0
 is_training = True
 wins = 0
 player_known_shells = [-2 for _ in range(8)]
+
+#Constants
+EPISODE_START = 1
+EPISODE_END = 200_000
+LOG_INTERVAL = 100

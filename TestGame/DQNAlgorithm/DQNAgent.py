@@ -14,12 +14,17 @@ class DQN(nn.Module):
         self.fc1 = nn.Linear(input_size, 128)
         self.fc2 = nn.Linear(128, 128)
         self.fc3 = nn.Linear(128, output_size)
+
+        if Vars.episode == 0:
+            print("Starting new training session")
+            self.reset_network()
+
         if not is_target:
-            self.optimizer = optim.Adam(self.parameters(), lr=0.001)
-            self.scheduler = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.9999)
+            self.optimizer = optim.Adam(self.parameters(), lr=0.0003)
+            self.scheduler = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.99999)
             self.criterion = nn.MSELoss()
             self.replay_buffer = ReplayBuffer(buffer_capacity)
-            self.batch_size = 64
+            self.batch_size = 128
             self.gamma = 0.99
             self.steal_mode = False
             self.target_network = DQN(input_size, output_size, buffer_capacity,True)
@@ -29,13 +34,17 @@ class DQN(nn.Module):
             
 
     def update_target_network(self):
-        target_state_dict = {
-                k: v for k, v in self.state_dict().items() 
-                if not k.startswith('target_network.')
-            }
-        self.target_network.load_state_dict(target_state_dict)
+        """Hard update target network parameters"""
+        for target_param, param in zip(self.target_network.parameters(), self.parameters()):
+            target_param.data.copy_(param.data)
         self.target_network.eval()
 
+    def soft_update_target_network(self, tau=0.01):
+        """Soft update target network parameters"""
+        for target_param, param in zip(self.target_network.parameters(), self.parameters()):
+            target_param.data.copy_(
+                tau * param.data + (1.0 - tau) * target_param.data
+            )
 
     def forward(self, state):
         if state is None or (isinstance(state, torch.Tensor) and state.nelement() == 0):
@@ -70,8 +79,15 @@ class DQN(nn.Module):
     def getCurrentState(self):
         #Barrel encoded to int
         barrel_encoded = PlayerKnownShells.getShells()
+        player_health_normalized = Vars.player_health / Vars.max_health
+        dealer_health_normalized = Vars.dealer_health / Vars.max_health
+        blanks_normalized = Vars.total_blank / len(Vars.shells)
+        live_normalized = Vars.total_live / len(Vars.shells)
+        bullet_index_normalized = Vars.bullet_index / len(Vars.shells)
 
-        return torch.tensor([Vars.player_health, Vars.bullet_index, Vars.total_blank, Vars.total_live, Vars.dealer_health, Vars.turn, *EncodeItems.encodeItems(), *barrel_encoded], dtype=torch.float32)
+
+
+        return torch.tensor([player_health_normalized, bullet_index_normalized, blanks_normalized, live_normalized, dealer_health_normalized, Vars.turn, *EncodeItems.encodeItems(), *barrel_encoded], dtype=torch.float32)
     
     def getAvailableActions(self):
         actions = [0 for _ in range(21)]
@@ -100,8 +116,15 @@ class DQN(nn.Module):
         return actions
 
     def takeAction(self, action):
-        reward = -0.01
+        reward = 0
         current_state = self.getCurrentState()
+        if action in [1, 2]:  # Shooting actions
+            total_shells = len(Vars.shells)
+            if total_shells > 0:
+                live_probability = Vars.total_live / total_shells
+                # Penalize actions with high uncertainty (close to 0.5 probability)
+                uncertainty_penalty = -0.2 * (1 - abs(live_probability - 0.5))
+                reward += uncertainty_penalty
         if action == 1:
             AIActions.aiShootSelf()
             if Vars.shells[Vars.bullet_index-1] == 0:
@@ -130,10 +153,10 @@ class DQN(nn.Module):
         
         if done:
             if Vars.dealer_health == 0:
-                reward += 10
+                reward += 5
                 Vars.wins += 1
             else:
-                reward -= 10
+                reward -= 5
 
         self.replay_buffer.add(current_state,action,reward,next_state,done)
         Vars.reward += reward
@@ -170,9 +193,34 @@ class DQN(nn.Module):
         self.optimizer.zero_grad()
         loss.backward()
         torch.nn.utils.clip_grad_norm_(self.parameters(), max_norm=1.0)
+        
+        # Replace hard update with more frequent soft updates
+        if Vars.episode % 50 == 0:  # More frequent, softer updates
+            self.soft_update_target_network(tau=0.01)
+    
         self.optimizer.step()
         self.scheduler.step()
         #Target Network Update
-        if Vars.episode % 1000 == 0 and Vars.episode != 0:
+        if Vars.episode % 500 == 0:
             self.update_target_network()
+
+    def reset_network(self):
+        """Reset the DQN to its initial state"""
+        # Reset network weights
+        def weight_reset(m):
+            if isinstance(m, nn.Linear):
+                m.reset_parameters()
+        
+        self.apply(weight_reset)
+        self.target_network.apply(weight_reset)
+        
+        # Reset optimizer
+        self.optimizer = optim.Adam(self.parameters(), lr=0.0003)
+        self.scheduler = optim.lr_scheduler.ExponentialLR(self.optimizer, gamma=0.99999)
+        
+        # Clear replay buffer
+        self.replay_buffer = ReplayBuffer(self.replay_buffer.buffer.maxlen)
+        
+        # Reset target network
+        self.update_target_network()
 
