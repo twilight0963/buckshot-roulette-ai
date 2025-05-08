@@ -9,18 +9,18 @@ import torch.optim as optim
 from DQNAlgorithm.ReplayBuffer import ReplayBuffer
 
 class DQN(nn.Module):
-    def __init__(self, input_size, output_size, buffer_capacity):
+    def __init__(self, input_size, output_size, buffer_capacity, is_target = False):
         super(DQN, self).__init__()
         self.fc1 = nn.Linear(input_size, 128)
         self.fc2 = nn.Linear(128, 128)
         self.fc3 = nn.Linear(128, output_size)
-        self.replay_buffer = ReplayBuffer(buffer_capacity)
-
-        self.criterion = nn.MSELoss()
-        self.batch_size = 64
-        self.gamma = 0.99
+        
+        # Load the best model weights
+        self.load_state_dict(torch.load('trainingdata.bin'))
+        self.eval()  # Set to evaluation mode
         self.steal_mode = False
 
+    # Remove training-related methods and keep only inference methods
     def forward(self, state):
         #Input layer
         state = torch.relu(self.fc1(state))
@@ -31,28 +31,21 @@ class DQN(nn.Module):
     
     def chooseAction(self, state):
         actions = self.getAvailableActions()
-        epsilon = 0.01
-        if numpy.random.random() < epsilon:
-            #Explore
-            avalaible_actions = [i for i, available in enumerate(actions) if available]
-            return numpy.random.choice(avalaible_actions)
-        
-        else:
-            with torch.no_grad():
-                #Exploit
-                q_values = self.forward(state)  # Get Q-values
-                q_values = q_values.detach().numpy()  # Convert tensor to NumPy for masking
-            
-                q_values = [q if actions[i] else -float('inf') for i, q in enumerate(q_values)]
-            
-                return int(numpy.argmax(q_values))
-    
+        with torch.no_grad():
+            q_values = self.forward(state)
+            q_values = q_values.detach().numpy()
+            q_values = [q if actions[i] else -float('inf') for i, q in enumerate(q_values)]
+            return int(numpy.argmax(q_values))
 
     def getCurrentState(self):
-        #Barrel encoded to int
         barrel_encoded = PlayerKnownShells.getShells()
+        dealer_health_normalized = Vars.dealer_health / Vars.max_health 
+        player_health_normalized = Vars.player_health / Vars.max_health
+        blanks_normalized = Vars.total_blank / len(Vars.shells)
+        live_normalized = Vars.total_live / len(Vars.shells)
+        bullet_index_normalized = Vars.bullet_index / len(Vars.shells)
 
-        return torch.tensor([Vars.dealer_health, Vars.bullet_index, Vars.total_blank, Vars.total_live, Vars.player_health, Vars.turn, *EncodeItems.encodeItems(), *barrel_encoded], dtype=torch.float32)
+        return torch.tensor([dealer_health_normalized, bullet_index_normalized, blanks_normalized, live_normalized, player_health_normalized, Vars.turn, *EncodeItems.encodeItems(), *barrel_encoded], dtype=torch.float32)
     
     def getAvailableActions(self):
         actions = [0 for _ in range(21)]
@@ -81,42 +74,16 @@ class DQN(nn.Module):
         return actions
 
     def takeAction(self, action):
-        reward = -0.01
-        current_state = self.getCurrentState()
+        # Keep action execution but remove training-related parts
+        reward = 0
         if action == 1:
             AIActions.aiShootSelf()
-            if Vars.shells[Vars.bullet_index-1] == 0:
-                reward += 1
-            else:
-                reward -= 1
         elif action == 2:
             AIActions.aiShootOther()
-            if Vars.shells[Vars.bullet_index-1] == 0:
-                reward -= 2
-            else:
-                reward += 2
         elif action > 3:
-            old_health = Vars.dealer_health
-            old_unknown = PlayerKnownShells.getShells().count(0)
             AIActions.aiUseItems(action-13 if action>13 else action-3)
-            new_unknown = PlayerKnownShells.getShells().count(0)
-            if old_health < Vars.dealer_health and old_health!=Vars.max_health and 1 in Vars.player_items: #1 is item id of cigarette, used for healing
-                reward += 0.3
-            else:
-                reward -= 0.3
-            reward += (old_unknown - new_unknown) * 0.2
-
-        next_state = self.getCurrentState()
-        done = Vars.player_health == 0 or Vars.dealer_health == 0
         
-        if done:
-            if Vars.player_health == 0:
-                reward += 10
-            else:
-                reward -= 10
-
-        self.replay_buffer.add(current_state,action,reward,next_state,done)
-        Vars.reward += reward
-        return reward, next_state
+        # No need to store in replay buffer or calculate rewards
+        return self.getCurrentState()
 
 

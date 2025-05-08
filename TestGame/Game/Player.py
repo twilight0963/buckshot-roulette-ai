@@ -3,7 +3,6 @@ from . import Actions
 from QLearningAlgo import PlayerKnownShells
 def playerTurn():
     isPH = Vars.isPH
-    print(isPH)
     if isPH-1 < 1:
         isPH = 0
         ch = int(input("choose to shoot, 0 is self, 1 is dealer, 2 to use items\n"))

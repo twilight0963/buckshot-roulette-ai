@@ -11,5 +11,4 @@ def DQNTurn():
     
     state = dqn.getCurrentState()
     action = dqn.chooseAction(state)
-    print(f"[AI] State: {state}, Selected Action: {action}")
     dqn.takeAction(action)

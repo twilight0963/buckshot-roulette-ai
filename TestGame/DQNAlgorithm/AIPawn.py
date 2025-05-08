@@ -10,6 +10,5 @@ def DQNTurn():
     global dqn
     state = dqn.getCurrentState()
     action = dqn.chooseAction(state)
-    print(f"[AI] State: {state}, Selected Action: {action}")
     dqn.takeAction(action)
     dqn.train()

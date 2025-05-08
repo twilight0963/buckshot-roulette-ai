@@ -16,14 +16,14 @@ from DQNAlgorithm import PlayerKnownShells
 #8 - Expired Meds
 #9 - Adrenaline
 def runGame():
-    Vars.max_health = random.randint(2,5)
+    Vars.max_health = random.randint(2,5) if Vars.episode < 10_000 else 3
     Vars.player_items = []
     Vars.dealer_items = []
     Vars.player_health,Vars.dealer_health = Vars.max_health,Vars.max_health
     while (Vars.dealer_health>0) and (Vars.player_health>0):
         Vars.player_items.extend([random.randint(1,7) for _ in range(min(4,8-len(Vars.player_items)))])
         Vars.dealer_items.extend([random.randint(1,7) for _ in range(4)])
-        Vars.shells = [random.randint(0, 1) for _ in range(random.randint(2,8))]
+        Vars.shells = [random.randint(0, 1) for _ in range(random.randint(2,8))] if Vars.episode < 10_000 else [random.randint(0, 1) for _ in range(4)]
         PlayerKnownShells.defineBarrel(len(Vars.shells))
         Vars.known_shells = {}
         while Vars.shells.count(1) == 0:
