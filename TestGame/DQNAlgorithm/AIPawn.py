@@ -1,7 +1,10 @@
 from DQNAlgorithm.DQNAgent import DQN
 import Game.Vars as Vars
 
-dqn = DQN(23, 21, 2_000_000)
+def makeDQN():
+    global dqn
+    dqn = DQN(23, 21, 2_000_000)
+    dqn.replay_buffer.load()
 
 def DQNTurn():
     if Vars.isPH != 0:
@@ -10,5 +13,6 @@ def DQNTurn():
     global dqn
     state = dqn.getCurrentState()
     action = dqn.chooseAction(state)
+
     dqn.takeAction(action)
     dqn.train()

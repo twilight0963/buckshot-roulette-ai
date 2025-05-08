@@ -1,10 +1,13 @@
 from Game import TestGame, Vars
+from DQNAlgorithm import AIPawn
 from datetime import datetime
 
 # Initialize the game
 Vars.reward = 0
 Vars.wins = 0
 old_win_rate = 0
+
+AIPawn.makeDQN()
 
 
 

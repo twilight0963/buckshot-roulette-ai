@@ -46,6 +46,13 @@ class DQN(nn.Module):
         if torch.cuda.device_count() > 1:
             self.model = nn.DataParallel(self.model)
 
+        # Force GPU usage on Colab
+        self.device = torch.device('cuda')
+        print(f"Using GPU: {torch.cuda.get_device_name()}")
+        
+        # Enable autocast for mixed precision
+        self.scaler = torch.cuda.amp.GradScaler()
+
     def update_target_network(self):
         """Hard update target network parameters"""
         for target_param, param in zip(self.target_network.parameters(), self.parameters()):
@@ -222,11 +229,16 @@ class DQN(nn.Module):
         
         for _ in range(num_batches):
             states, actions, rewards, next_states, dones = self.replay_buffer.sample(self.batch_size)
-            states = torch.FloatTensor(states).to(self.device)
-            actions = torch.LongTensor(actions).to(self.device)
-            rewards = torch.FloatTensor(rewards).to(self.device)
-            next_states = torch.FloatTensor(next_states).to(self.device)
-            dones = torch.tensor(dones).float().to(self.device)
+        if not isinstance(states, torch.Tensor):
+            states = torch.tensor(states, dtype=torch.float32, device=self.device)
+        if not isinstance(actions, torch.Tensor):
+            actions = torch.tensor(actions, dtype=torch.long, device=self.device)
+        if not isinstance(rewards, torch.Tensor):
+            rewards = torch.tensor(rewards, dtype=torch.float32, device=self.device)
+        if not isinstance(next_states, torch.Tensor):
+            next_states = torch.tensor(next_states, dtype=torch.float32, device=self.device)
+        if not isinstance(dones, torch.Tensor):
+            dones = torch.tensor(dones, dtype=torch.float32, device=self.device)
             
             # Get current Q values
             current_q_values = self(states)

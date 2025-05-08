@@ -59,10 +59,46 @@ class ReplayBuffer:
         print(f"Replay buffer saved at episode {Vars.episode}")  # Added logging
 
     def load(self):
-        filename="Traindata.bin"
-        try:
-            with open(filename, "rb") as f:
-                self.buffer = pickle.load(f)
-            print(f"Replay buffer loaded from {filename}")
-        except FileNotFoundError:
+        import os
+        import glob
+
+        # Check both specific save directory and current directory
+        save_dir = "TestGame/DQNAlgorithm/SaveData"
+        save_patterns = [
+            os.path.join(save_dir, "Traindata_*.bin"),  # Numbered saves
+            os.path.join(save_dir, "Traindata.bin"),    # Best performance save
+            "Traindata_*.bin",                          # Fallback numbered saves
+            "Traindata.bin"                             # Fallback best save
+        ]
+        
+        latest_file = None
+        latest_episode = -1
+        
+        for pattern in save_patterns:
+            files = glob.glob(pattern)
+            for file in files:
+                # Extract episode number from filename
+                if '_' in file:
+                    try:
+                        episode = int(file.split('_')[-1].replace('.bin', ''))
+                        if episode > latest_episode:
+                            latest_episode = episode
+                            latest_file = file
+                    except ValueError:
+                        continue
+                elif latest_episode == -1:  # For Traindata.bin (best performance)
+                    latest_file = file
+        
+        if latest_file:
+            try:
+                with open(latest_file, "rb") as f:
+                    self.buffer = pickle.load(f)
+                print(f"Loaded replay buffer from {latest_file}")
+                if latest_episode > 0:
+                    print(f"Continuing from episode {latest_episode}")
+                    Vars.EPISODE_START = latest_episode + 1
+            except (EOFError, pickle.UnpicklingError) as e:
+                print(f"Error loading save file: {e}")
+                print("Starting fresh buffer")
+        else:
             print("No saved replay buffer found, starting fresh.")
