@@ -20,8 +20,8 @@ for i in range(Vars.EPISODE_START, Vars.EPISODE_END+1):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         avg_reward = Vars.reward / Vars.LOG_INTERVAL
         win_rate = Vars.wins * 100 / Vars.LOG_INTERVAL
-        epsilon = Vars.epsilon if hasattr(Vars, 'epsilon') else 0
-        last_loss = Vars.last_loss if hasattr(Vars, 'last_loss') else 0
+        epsilon = Vars.epsilon
+        last_loss = Vars.last_loss
         #Log the results
         with open("log.txt", "a") as f:
             f.write(f"\nEpisode: {i} || Reward on average: {avg_reward} || Win Rate = {win_rate}% || Epsilon: {epsilon} || Loss: {last_loss} || Time: {timestamp}")
